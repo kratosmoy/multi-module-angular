@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { ConfigService, ExternalAppConfig } from '../services/config.service';
 
 @Component({
   selector: 'app-home',
@@ -7,32 +8,48 @@ import { Router } from '@angular/router';
   styleUrl: './home.component.scss'
 })
 export class HomeComponent implements OnInit {
-  constructor(private router: Router) { }
+  constructor(private router: Router, private configService: ConfigService) { }
 
   currentTab: 'all' | 'favorites' = 'favorites';
   favoriteIds: string[] = [];
 
-  modules = [
+  modules: any[] = [
     {
       id: 'data-query',
       name: 'Data Query Module',
       description: 'Query and view data from backend API.',
       bgStyle: 'linear-gradient(135deg, #1b539c 0%, #089fd1 100%)',
       logo: 'DQ'
-    },
-    {
-      id: 'external-app',
-      name: 'External App',
-      description: 'Load an external application via Iframe.',
-      bgStyle: 'linear-gradient(135deg, #4b1b9c 0%, #ca08d1 100%)',
-      logo: 'EA'
     }
   ];
 
   ngOnInit() {
+    this.configService.loadExternalApps().subscribe({
+      next: (apps) => {
+        apps.forEach(app => {
+          this.modules.push({
+            id: 'ext-' + app.id,
+            name: app.name,
+            description: app.description,
+            bgStyle: app.bgStyle || 'linear-gradient(135deg, #4b1b9c 0%, #ca08d1 100%)',
+            logo: app.logo || 'EA'
+          });
+        });
+        this.initializeFavorites();
+      },
+      error: (err) => {
+        console.error('Failed to load external apps config', err);
+        this.initializeFavorites();
+      }
+    });
+  }
+
+  initializeFavorites() {
     const saved = localStorage.getItem('favoriteModules');
     if (saved) {
       this.favoriteIds = JSON.parse(saved);
+      // Clean up favorites that no longer exist
+      this.favoriteIds = this.favoriteIds.filter(fId => this.modules.some(m => m.id === fId));
     } else {
       this.favoriteIds = this.modules.map(m => m.id);
       this.saveFavorites();
