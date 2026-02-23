@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { ConfigService, ExternalAppConfig } from '../services/config.service';
 
 @Component({
+  standalone: false,
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'

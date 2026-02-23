@@ -23,6 +23,7 @@ export interface QueryTab {
 }
 
 @Component({
+  standalone: false,
   selector: 'app-aggregation-dialog',
   template: `
     <h2 mat-dialog-title>Aggregate Data</h2>
@@ -54,6 +55,7 @@ export class AggregationDialogComponent {
 }
 
 @Component({
+  standalone: false,
   selector: 'app-data-query',
   templateUrl: './data-query.component.html',
   styleUrl: './data-query.component.scss'

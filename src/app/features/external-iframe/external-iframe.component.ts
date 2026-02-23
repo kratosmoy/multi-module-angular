@@ -2,6 +2,7 @@ import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/cor
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
+  standalone: false,
   selector: 'app-external-iframe',
   templateUrl: './external-iframe.component.html',
   styleUrl: './external-iframe.component.scss'

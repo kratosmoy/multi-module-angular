@@ -8,6 +8,7 @@ import { ExternalIframeComponent } from '../../features/external-iframe/external
 import { ConfigService } from '../services/config.service';
 
 @Component({
+  standalone: false,
   selector: 'app-workspace',
   templateUrl: './workspace.component.html',
   styleUrl: './workspace.component.scss'
