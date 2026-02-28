@@ -9,8 +9,7 @@ describe('ExternalIframeComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [ExternalIframeComponent]
-    })
-    .compileComponents();
+    }).compileComponents();
 
     fixture = TestBed.createComponent(ExternalIframeComponent);
     component = fixture.componentInstance;

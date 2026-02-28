@@ -50,8 +50,9 @@ export interface QueryTab {
 export class AggregationDialogComponent {
   constructor(
     public dialogRef: MatDialogRef<AggregationDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { columns: string[], numericColumns: string[], groupBy: string[], aggregateField: string }
-  ) { }
+    @Inject(MAT_DIALOG_DATA)
+    public data: { columns: string[]; numericColumns: string[]; groupBy: string[]; aggregateField: string }
+  ) {}
 }
 
 @Component({
@@ -63,7 +64,14 @@ export class AggregationDialogComponent {
 export class DataQueryComponent implements OnInit {
   displayedColumns: string[] = ['id', 'tradeType', 'tradeDate', 'amount', 'currency', 'counterparty'];
   colDefs: ColDef[] = [
-    { field: 'id', headerName: 'ID', filter: 'agNumberColumnFilter', maxWidth: 100, checkboxSelection: true, headerCheckboxSelection: true },
+    {
+      field: 'id',
+      headerName: 'ID',
+      filter: 'agNumberColumnFilter',
+      maxWidth: 100,
+      checkboxSelection: true,
+      headerCheckboxSelection: true
+    },
     { field: 'tradeType', headerName: 'Trade Type', filter: 'agTextColumnFilter' },
     { field: 'tradeDate', headerName: 'Trade Date', filter: 'agDateColumnFilter' },
     {
@@ -71,7 +79,7 @@ export class DataQueryComponent implements OnInit {
       headerName: 'Amount',
       filter: 'agNumberColumnFilter',
       type: 'numericColumn',
-      valueFormatter: params => params.value != null ? Number(params.value).toLocaleString() : ''
+      valueFormatter: params => (params.value != null ? Number(params.value).toLocaleString() : '')
     },
     { field: 'currency', headerName: 'Currency', filter: 'agTextColumnFilter', maxWidth: 150 },
     { field: 'counterparty', headerName: 'Counterparty', filter: 'agTextColumnFilter' }
@@ -103,7 +111,10 @@ export class DataQueryComponent implements OnInit {
   @ViewChild('contextMenuTrigger') contextMenu!: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };
 
-  constructor(private http: HttpClient, private dialog: MatDialog) { }
+  constructor(
+    private http: HttpClient,
+    private dialog: MatDialog
+  ) {}
 
   getTodayString(): string {
     return this.formatDate(new Date());
@@ -135,9 +146,15 @@ export class DataQueryComponent implements OnInit {
 
   onSearch() {
     const filtered = this.allData.filter(trade => {
-      const matchType = !this.filters.tradeType || (trade.tradeType && trade.tradeType.toLowerCase().includes(this.filters.tradeType.toLowerCase()));
-      const matchCurrency = !this.filters.currency || (trade.currency && trade.currency.toLowerCase().includes(this.filters.currency.toLowerCase()));
-      const matchCounterparty = !this.filters.counterparty || (trade.counterparty && trade.counterparty.toLowerCase().includes(this.filters.counterparty.toLowerCase()));
+      const matchType =
+        !this.filters.tradeType ||
+        (trade.tradeType && trade.tradeType.toLowerCase().includes(this.filters.tradeType.toLowerCase()));
+      const matchCurrency =
+        !this.filters.currency ||
+        (trade.currency && trade.currency.toLowerCase().includes(this.filters.currency.toLowerCase()));
+      const matchCounterparty =
+        !this.filters.counterparty ||
+        (trade.counterparty && trade.counterparty.toLowerCase().includes(this.filters.counterparty.toLowerCase()));
 
       let matchDate = true;
       if (trade.tradeDate) {
@@ -222,10 +239,10 @@ export class DataQueryComponent implements OnInit {
     }
 
     // Perform grouping and aggregation
-    const map = new Map<string, { sum: number, keys: any }>();
+    const map = new Map<string, { sum: number; keys: any }>();
     currentData.forEach(trade => {
       const keysObj: any = {};
-      groupBy.forEach(g => keysObj[g] = (trade as any)[g]);
+      groupBy.forEach(g => (keysObj[g] = (trade as any)[g]));
       const keyString = JSON.stringify(keysObj);
       const val = Number((trade as any)[aggregateField]) || 0;
 
@@ -240,8 +257,16 @@ export class DataQueryComponent implements OnInit {
     // Create a new data source based on aggregated results
     const aggregatedData: Trade[] = [];
     let idCounter = 1;
-    map.forEach((value) => {
-      const newTrade: any = { id: idCounter++, tradeType: '', tradeDate: '', amount: 0, currency: '', counterparty: '', ...value.keys };
+    map.forEach(value => {
+      const newTrade: any = {
+        id: idCounter++,
+        tradeType: '',
+        tradeDate: '',
+        amount: 0,
+        currency: '',
+        counterparty: '',
+        ...value.keys
+      };
       newTrade[aggregateField] = value.sum;
       aggregatedData.push(newTrade as Trade);
     });
@@ -259,7 +284,7 @@ export class DataQueryComponent implements OnInit {
       filter: 'agNumberColumnFilter',
       type: 'numericColumn',
       maxWidth: 350,
-      valueFormatter: (params: any) => params.value != null ? Number(params.value).toLocaleString() : ''
+      valueFormatter: (params: any) => (params.value != null ? Number(params.value).toLocaleString() : '')
     });
 
     this.tabCounter++;

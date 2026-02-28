@@ -20,7 +20,7 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     public tabService: TabService,
     private configService: ConfigService
-  ) { }
+  ) {}
 
   ngOnInit() {
     this.routeSub = this.route.paramMap.subscribe(params => {

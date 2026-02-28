@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { ConfigService, ExternalAppConfig } from '../services/config.service';
 
@@ -9,40 +9,62 @@ import { ConfigService, ExternalAppConfig } from '../services/config.service';
   styleUrl: './home.component.scss'
 })
 export class HomeComponent implements OnInit {
-  constructor(private router: Router, private configService: ConfigService) { }
+  constructor(
+    private router: Router,
+    private configService: ConfigService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
-  currentTab: 'all' | 'favorites' = 'favorites';
+  currentTab: 'all' | 'favorites' = 'all';
   favoriteIds: string[] = [];
+  isLoading = true;
 
-  modules: any[] = [
-    {
-      id: 'data-query',
-      name: 'Data Query Module',
-      description: 'Query and view data from backend API.',
-      bgStyle: 'linear-gradient(135deg, #1b539c 0%, #089fd1 100%)',
-      logo: 'DQ'
-    }
-  ];
+  modules: any[] = [];
 
   ngOnInit() {
+    this.modules = [
+      {
+        id: 'data-query',
+        name: 'Data Query Module',
+        description: 'Query and view data from backend API.',
+        bgStyle: 'linear-gradient(135deg, #1b539c 0%, #089fd1 100%)',
+        logo: 'DQ'
+      }
+    ];
+
+    const cachedApps = this.configService.getExternalApps();
+    if (cachedApps && cachedApps.length > 0) {
+      this.appendExternalApps(cachedApps);
+      this.isLoading = false;
+      return;
+    }
+
     this.configService.loadExternalApps().subscribe({
-      next: (apps) => {
-        apps.forEach(app => {
-          this.modules.push({
-            id: 'ext-' + app.id,
-            name: app.name,
-            description: app.description,
-            bgStyle: app.bgStyle || 'linear-gradient(135deg, #4b1b9c 0%, #ca08d1 100%)',
-            logo: app.logo || 'EA'
-          });
-        });
-        this.initializeFavorites();
+      next: apps => {
+        this.appendExternalApps(apps);
+        this.isLoading = false;
+        this.cdr.detectChanges();
       },
-      error: (err) => {
+      error: err => {
         console.error('Failed to load external apps config', err);
         this.initializeFavorites();
+        this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
+  }
+
+  private appendExternalApps(apps: ExternalAppConfig[]) {
+    apps.forEach(app => {
+      this.modules.push({
+        id: 'ext-' + app.id,
+        name: app.name,
+        description: app.description,
+        bgStyle: app.bgStyle || 'linear-gradient(135deg, #4b1b9c 0%, #ca08d1 100%)',
+        logo: app.logo || 'EA'
+      });
+    });
+    this.initializeFavorites();
   }
 
   initializeFavorites() {

@@ -9,8 +9,7 @@ describe('DataQueryComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [DataQueryComponent]
-    })
-    .compileComponents();
+    }).compileComponents();
 
     fixture = TestBed.createComponent(DataQueryComponent);
     component = fixture.componentInstance;

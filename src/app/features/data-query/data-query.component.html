@@ -1,94 +1,123 @@
 <div class="query-container">
-    <div class="header-section">
-        <h2>Data Query Example</h2>
-        <p>Use the form below to filter trade data.</p>
+  <div class="header-section">
+    <h2>Data Query Example</h2>
+    <p>Use the form below to filter trade data.</p>
+  </div>
+
+  <!-- Filter Form -->
+  <div class="filter-card">
+    <div class="filter-row">
+      <div class="filter-group date-group">
+        <label>Trade Date Range</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dense-date-field">
+          <mat-date-range-input [rangePicker]="picker">
+            <input
+              matStartDate
+              placeholder="Start date"
+              [value]="parsedStartDate"
+              (dateChange)="onStartDateChange($event)"
+            />
+            <input matEndDate placeholder="End date" [value]="parsedEndDate" (dateChange)="onEndDateChange($event)" />
+          </mat-date-range-input>
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-date-range-picker #picker></mat-date-range-picker>
+        </mat-form-field>
+      </div>
+      <div class="filter-group">
+        <label>Trade Type</label>
+        <input
+          class="native-input"
+          type="text"
+          placeholder="e.g. swap"
+          [value]="filters.tradeType"
+          (input)="filters.tradeType = $any($event.target).value"
+        />
+      </div>
+      <div class="filter-group">
+        <label>Currency</label>
+        <input
+          class="native-input"
+          type="text"
+          placeholder="e.g. USD"
+          [value]="filters.currency"
+          (input)="filters.currency = $any($event.target).value"
+        />
+      </div>
+      <div class="filter-group">
+        <label>Counterparty</label>
+        <input
+          class="native-input"
+          type="text"
+          placeholder="e.g. bank"
+          [value]="filters.counterparty"
+          (input)="filters.counterparty = $any($event.target).value"
+        />
+      </div>
+    </div>
+    <div class="filter-actions">
+      <button class="btn-reset" (click)="onReset()">Reset</button>
+      <button class="btn-search" (click)="onSearch()">Search</button>
+    </div>
+  </div>
+
+  <!-- Custom Tab Navigation -->
+  <div class="custom-tab-nav" *ngIf="queryTabs.length > 0">
+    <div
+      class="tab-item"
+      *ngFor="let tab of queryTabs; let i = index"
+      [class.active]="selectedTabIndex === i"
+      (click)="selectedTabIndex = i"
+    >
+      <span class="tab-label-text">{{ tab.title }}</span>
+      <button class="tab-close-btn" (click)="closeTab(i, $event)" title="Close tab">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="queryTabs.length === 0">
+    <mat-icon>search</mat-icon>
+    <p>No query results yet. Execute a search to view data.</p>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="tab-content-container" *ngIf="queryTabs[selectedTabIndex]">
+    <div class="tab-filter-bar">
+      <mat-icon class="filter-icon">filter_list</mat-icon>
+      <input type="text" placeholder="Filter this query result..." (keyup)="applyTabFilter($event, selectedTabIndex)" />
     </div>
 
-    <!-- Filter Form -->
-    <div class="filter-card">
-        <div class="filter-row">
-            <div class="filter-group date-group">
-                <label>Trade Date Range</label>
-                <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dense-date-field">
-                    <mat-date-range-input [rangePicker]="picker">
-                        <input matStartDate placeholder="Start date" [value]="parsedStartDate"
-                            (dateChange)="onStartDateChange($event)">
-                        <input matEndDate placeholder="End date" [value]="parsedEndDate"
-                            (dateChange)="onEndDateChange($event)">
-                    </mat-date-range-input>
-                    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                    <mat-date-range-picker #picker></mat-date-range-picker>
-                </mat-form-field>
-            </div>
-            <div class="filter-group">
-                <label>Trade Type</label>
-                <input class="native-input" type="text" placeholder="e.g. swap" [value]="filters.tradeType"
-                    (input)="filters.tradeType = $any($event.target).value">
-            </div>
-            <div class="filter-group">
-                <label>Currency</label>
-                <input class="native-input" type="text" placeholder="e.g. USD" [value]="filters.currency"
-                    (input)="filters.currency = $any($event.target).value">
-            </div>
-            <div class="filter-group">
-                <label>Counterparty</label>
-                <input class="native-input" type="text" placeholder="e.g. bank" [value]="filters.counterparty"
-                    (input)="filters.counterparty = $any($event.target).value">
-            </div>
-        </div>
-        <div class="filter-actions">
-            <button class="btn-reset" (click)="onReset()">Reset</button>
-            <button class="btn-search" (click)="onSearch()">Search</button>
-        </div>
+    <div class="table-container">
+      <!-- Hidden context menu trigger button mapped to the actual mat-menu -->
+      <div
+        style="visibility: hidden; position: fixed"
+        [style.left]="contextMenuPosition.x"
+        [style.top]="contextMenuPosition.y"
+        [matMenuTriggerFor]="contextMenu"
+        #contextMenuTrigger="matMenuTrigger"
+      ></div>
+
+      <mat-menu #contextMenu="matMenu">
+        <ng-template matMenuContent>
+          <button mat-menu-item (click)="openAggregateDialog()">
+            <mat-icon>functions</mat-icon>
+            <span>Aggregate By Group (Selected/All)</span>
+          </button>
+        </ng-template>
+      </mat-menu>
+
+      <ag-grid-angular
+        class="ag-theme-material"
+        style="height: 500px; width: 100%; border: none; font-family: inherit"
+        [rowData]="queryTabs[selectedTabIndex].dataSource"
+        [columnDefs]="queryTabs[selectedTabIndex].colDefs || colDefs"
+        [defaultColDef]="defaultColDef"
+        (gridReady)="onGridReady($event, selectedTabIndex)"
+        (cellContextMenu)="onContextMenu($event)"
+        [preventDefaultOnContextMenu]="true"
+        rowSelection="multiple"
+      >
+      </ag-grid-angular>
     </div>
-
-    <!-- Custom Tab Navigation -->
-    <div class="custom-tab-nav" *ngIf="queryTabs.length > 0">
-        <div class="tab-item" *ngFor="let tab of queryTabs; let i = index" [class.active]="selectedTabIndex === i"
-            (click)="selectedTabIndex = i">
-            <span class="tab-label-text">{{tab.title}}</span>
-            <button class="tab-close-btn" (click)="closeTab(i, $event)" title="Close tab">
-                <mat-icon>close</mat-icon>
-            </button>
-        </div>
-    </div>
-
-    <div class="empty-state" *ngIf="queryTabs.length === 0">
-        <mat-icon>search</mat-icon>
-        <p>No query results yet. Execute a search to view data.</p>
-    </div>
-
-    <!-- Tab Content -->
-    <div class="tab-content-container" *ngIf="queryTabs[selectedTabIndex]">
-        <div class="tab-filter-bar">
-            <mat-icon class="filter-icon">filter_list</mat-icon>
-            <input type="text" placeholder="Filter this query result..."
-                (keyup)="applyTabFilter($event, selectedTabIndex)">
-        </div>
-
-        <div class="table-container">
-            <!-- Hidden context menu trigger button mapped to the actual mat-menu -->
-            <div style="visibility: hidden; position: fixed" [style.left]="contextMenuPosition.x"
-                [style.top]="contextMenuPosition.y" [matMenuTriggerFor]="contextMenu"
-                #contextMenuTrigger="matMenuTrigger">
-            </div>
-
-            <mat-menu #contextMenu="matMenu">
-                <ng-template matMenuContent>
-                    <button mat-menu-item (click)="openAggregateDialog()">
-                        <mat-icon>functions</mat-icon>
-                        <span>Aggregate By Group (Selected/All)</span>
-                    </button>
-                </ng-template>
-            </mat-menu>
-
-            <ag-grid-angular class="ag-theme-material"
-                style="height: 500px; width: 100%; border: none; font-family: inherit;"
-                [rowData]="queryTabs[selectedTabIndex].dataSource"
-                [columnDefs]="queryTabs[selectedTabIndex].colDefs || colDefs" [defaultColDef]="defaultColDef"
-                (gridReady)="onGridReady($event, selectedTabIndex)" (cellContextMenu)="onContextMenu($event)"
-                [preventDefaultOnContextMenu]="true" rowSelection="multiple">
-            </ag-grid-angular>
-        </div>
-    </div>
+  </div>
 </div>

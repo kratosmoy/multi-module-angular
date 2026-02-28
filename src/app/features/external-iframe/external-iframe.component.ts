@@ -11,7 +11,7 @@ export class ExternalIframeComponent implements OnInit, OnChanges {
   @Input() url: string = 'https://angular.dev/';
   iframeUrl: SafeResourceUrl | undefined;
 
-  constructor(private sanitizer: DomSanitizer) { }
+  constructor(private sanitizer: DomSanitizer) {}
 
   ngOnInit() {
     this.updateIframeUrl();

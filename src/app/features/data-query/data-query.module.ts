@@ -17,10 +17,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { AgGridAngular } from 'ag-grid-angular';
 
 @NgModule({
-  declarations: [
-    DataQueryComponent,
-    AggregationDialogComponent
-  ],
+  declarations: [DataQueryComponent, AggregationDialogComponent],
   imports: [
     CommonModule,
     AgGridAngular,
@@ -39,8 +36,6 @@ import { AgGridAngular } from 'ag-grid-angular';
     FormsModule,
     ReactiveFormsModule
   ],
-  exports: [
-    DataQueryComponent
-  ]
+  exports: [DataQueryComponent]
 })
-export class DataQueryModule { }
+export class DataQueryModule {}

@@ -1,28 +1,36 @@
 <div class="ms-app-layout">
-    <header class="ms-top-nav">
-        <div class="nav-brand">
-            <span class="brand-bold">Multi-Module App</span>
-        </div>
+  <header class="ms-top-nav">
+    <div class="nav-brand">
+      <span class="brand-bold">Multi-Module App</span>
+    </div>
 
-        <div class="nav-center">
-            <div class="icon-button"><mat-icon>tune</mat-icon></div>
-            <div class="icon-button" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
-                title="Home"><mat-icon>home</mat-icon></div>
-            <div class="icon-button" routerLink="/workspace/data-query" routerLinkActive="active" title="Workspace">
-                <mat-icon>dashboard</mat-icon></div>
-            <div class="icon-button"><mat-icon>notifications</mat-icon></div>
-        </div>
+    <div class="nav-center">
+      <div class="icon-button"><mat-icon>tune</mat-icon></div>
+      <div
+        class="icon-button"
+        routerLink="/"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        title="Home"
+      >
+        <mat-icon>home</mat-icon>
+      </div>
+      <div class="icon-button" routerLink="/workspace/data-query" routerLinkActive="active" title="Workspace">
+        <mat-icon>dashboard</mat-icon>
+      </div>
+      <div class="icon-button"><mat-icon>notifications</mat-icon></div>
+    </div>
 
-        <div class="nav-search-container">
-            <input type="text" class="nav-search-input" placeholder="Quick launch application">
-        </div>
+    <div class="nav-search-container">
+      <input type="text" class="nav-search-input" placeholder="Quick launch application" />
+    </div>
 
-        <div class="nav-actions">
-            <div class="icon-button"><mat-icon>apps</mat-icon></div>
-        </div>
-    </header>
+    <div class="nav-actions">
+      <div class="icon-button"><mat-icon>apps</mat-icon></div>
+    </div>
+  </header>
 
-    <main class="ms-main-content">
-        <router-outlet></router-outlet>
-    </main>
+  <main class="ms-main-content">
+    <router-outlet></router-outlet>
+  </main>
 </div>

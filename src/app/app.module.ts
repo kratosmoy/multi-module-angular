@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, HTTP_INTERCEPTORS, withInterceptorsFromDi } from '@angular/common/http';
+import { ApiInterceptor } from './core/interceptors/api.interceptor';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -18,11 +19,7 @@ import { DataQueryModule } from './features/data-query/data-query.module';
 import { ExternalIframeModule } from './features/external-iframe/external-iframe.module';
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    HomeComponent,
-    WorkspaceComponent
-  ],
+  declarations: [AppComponent, HomeComponent, WorkspaceComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,
@@ -36,8 +33,9 @@ import { ExternalIframeModule } from './features/external-iframe/external-iframe
   ],
   providers: [
     provideAnimationsAsync(),
-    provideHttpClient()
+    provideHttpClient(withInterceptorsFromDi()),
+    { provide: HTTP_INTERCEPTORS, useClass: ApiInterceptor, multi: true }
   ],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {}

@@ -1,25 +1,28 @@
 <div class="workspace-container">
-    <div class="workspace-content">
-        <mat-tab-group [selectedIndex]="tabService.activeTabIndex$ | async" (selectedIndexChange)="onTabChange($event)"
-            animationDuration="0ms">
-            <mat-tab *ngFor="let tab of tabService.tabs$ | async; let i = index">
-                <ng-template mat-tab-label>
-                    <span class="tab-title">{{ tab.title }}</span>
-                    <button mat-icon-button class="close-btn" (click)="closeTab(i, $event)">
-                        <mat-icon>close</mat-icon>
-                    </button>
-                </ng-template>
+  <div class="workspace-content">
+    <mat-tab-group
+      [selectedIndex]="tabService.activeTabIndex$ | async"
+      (selectedIndexChange)="onTabChange($event)"
+      animationDuration="0ms"
+    >
+      <mat-tab *ngFor="let tab of tabService.tabs$ | async; let i = index">
+        <ng-template mat-tab-label>
+          <span class="tab-title">{{ tab.title }}</span>
+          <button mat-icon-button class="close-btn" (click)="closeTab(i, $event)">
+            <mat-icon>close</mat-icon>
+          </button>
+        </ng-template>
 
-                <div class="tab-content" *ngIf="tab.componentType">
-                    <ng-container *ngComponentOutlet="tab.componentType; inputs: tab.data || {}"></ng-container>
-                </div>
-            </mat-tab>
-        </mat-tab-group>
-
-        <div class="empty-state" *ngIf="(tabService.tabs$ | async)?.length === 0">
-            <mat-icon class="huge-icon">web</mat-icon>
-            <h2>No open modules</h2>
-            <button mat-raised-button color="primary" routerLink="/">Return to Dashboard</button>
+        <div class="tab-content" *ngIf="tab.componentType">
+          <ng-container *ngComponentOutlet="tab.componentType; inputs: tab.data || {}"></ng-container>
         </div>
+      </mat-tab>
+    </mat-tab-group>
+
+    <div class="empty-state" *ngIf="(tabService.tabs$ | async)?.length === 0">
+      <mat-icon class="huge-icon">web</mat-icon>
+      <h2>No open modules</h2>
+      <button mat-raised-button color="primary" routerLink="/">Return to Dashboard</button>
     </div>
+  </div>
 </div>
