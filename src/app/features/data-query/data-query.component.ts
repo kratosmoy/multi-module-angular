@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, Inject } from '@angular/core';
+import { Component, OnInit, ViewChild, Inject, Input } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ColDef, GridReadyEvent, CellContextMenuEvent, ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
 
@@ -7,18 +7,12 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 import { MatMenuTrigger } from '@angular/material/menu';
 import { MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
-export interface Trade {
-  id: number;
-  tradeType: string;
-  tradeDate: string;
-  amount: number;
-  currency: string;
-  counterparty: string;
-}
+import { DataQueryConfig } from '../../core/config/data-query.config';
+import { QueryCondition } from '../../shared/components/query-builder/query-builder.component';
 
 export interface QueryTab {
   title: string;
-  dataSource: Trade[];
+  dataSource: any[];
   colDefs?: ColDef[];
 }
 
@@ -62,28 +56,10 @@ export class AggregationDialogComponent {
   styleUrl: './data-query.component.scss'
 })
 export class DataQueryComponent implements OnInit {
-  displayedColumns: string[] = ['id', 'tradeType', 'tradeDate', 'amount', 'currency', 'counterparty'];
-  colDefs: ColDef[] = [
-    {
-      field: 'id',
-      headerName: 'ID',
-      filter: 'agNumberColumnFilter',
-      maxWidth: 100,
-      checkboxSelection: true,
-      headerCheckboxSelection: true
-    },
-    { field: 'tradeType', headerName: 'Trade Type', filter: 'agTextColumnFilter' },
-    { field: 'tradeDate', headerName: 'Trade Date', filter: 'agDateColumnFilter' },
-    {
-      field: 'amount',
-      headerName: 'Amount',
-      filter: 'agNumberColumnFilter',
-      type: 'numericColumn',
-      valueFormatter: params => (params.value != null ? Number(params.value).toLocaleString() : '')
-    },
-    { field: 'currency', headerName: 'Currency', filter: 'agTextColumnFilter', maxWidth: 150 },
-    { field: 'counterparty', headerName: 'Counterparty', filter: 'agTextColumnFilter' }
-  ];
+  @Input() config!: DataQueryConfig;
+
+  displayedColumns: string[] = [];
+  colDefs: ColDef[] = [];
   defaultColDef: ColDef = {
     flex: 1,
     minWidth: 100,
@@ -92,21 +68,10 @@ export class DataQueryComponent implements OnInit {
     floatingFilter: true, // Shows individual column filter input row
     resizable: true
   };
-  allData: Trade[] = [];
+  allData: any[] = [];
   queryTabs: QueryTab[] = [];
   selectedTabIndex = 0;
   tabCounter = 1;
-
-  filters = {
-    tradeType: '',
-    currency: '',
-    counterparty: '',
-    startDate: this.getTodayString(),
-    endDate: this.getTodayString()
-  };
-
-  parsedStartDate: Date | null = new Date();
-  parsedEndDate: Date | null = new Date();
 
   @ViewChild('contextMenuTrigger') contextMenu!: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };
@@ -116,77 +81,88 @@ export class DataQueryComponent implements OnInit {
     private dialog: MatDialog
   ) {}
 
-  getTodayString(): string {
-    return this.formatDate(new Date());
-  }
-
-  formatDate(date: Date | null): string {
-    if (!date) return '';
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-
-  onStartDateChange(event: any) {
-    this.parsedStartDate = event.value;
-    this.filters.startDate = this.formatDate(event.value);
-  }
-
-  onEndDateChange(event: any) {
-    this.parsedEndDate = event.value;
-    this.filters.endDate = this.formatDate(event.value);
-  }
-
   ngOnInit() {
-    this.http.get<Trade[]>('/api/trades').subscribe(data => {
+    if (!this.config) {
+      console.warn('DataQueryComponent initialized without config');
+      return;
+    }
+
+    this.colDefs = this.config.colDefs;
+    this.displayedColumns = this.config.colDefs.map(c => c.field).filter(f => !!f) as string[];
+
+    // Only load initial empty or base dataset if necessary. For now, pull all data:
+    this.http.get<any[]>(this.config.apiEndpoint).subscribe(data => {
       this.allData = data || [];
+      // create initial tab
+      this.queryTabs.push({
+        title: 'All Data',
+        dataSource: this.allData
+      });
     });
   }
 
-  onSearch() {
-    const filtered = this.allData.filter(trade => {
-      const matchType =
-        !this.filters.tradeType ||
-        (trade.tradeType && trade.tradeType.toLowerCase().includes(this.filters.tradeType.toLowerCase()));
-      const matchCurrency =
-        !this.filters.currency ||
-        (trade.currency && trade.currency.toLowerCase().includes(this.filters.currency.toLowerCase()));
-      const matchCounterparty =
-        !this.filters.counterparty ||
-        (trade.counterparty && trade.counterparty.toLowerCase().includes(this.filters.counterparty.toLowerCase()));
-
-      let matchDate = true;
-      if (trade.tradeDate) {
-        if (this.filters.startDate && trade.tradeDate < this.filters.startDate) matchDate = false;
-        if (this.filters.endDate && trade.tradeDate > this.filters.endDate) matchDate = false;
-      } else if (this.filters.startDate || this.filters.endDate) {
-        matchDate = false;
-      }
-
-      return matchType && matchCurrency && matchCounterparty && matchDate;
-    });
-
-    const criteria = [];
-    if (this.filters.startDate || this.filters.endDate) {
-      if (this.filters.startDate === this.filters.endDate) {
-        criteria.push(`Date: ${this.filters.startDate}`);
-      } else {
-        criteria.push(`Date: ${this.filters.startDate || 'Any'} to ${this.filters.endDate || 'Any'}`);
-      }
-    }
-    if (this.filters.tradeType) criteria.push(this.filters.tradeType);
-    if (this.filters.currency) criteria.push(this.filters.currency);
-    if (this.filters.counterparty) criteria.push(this.filters.counterparty);
-
+  onQuerySubmit(conditions: QueryCondition[]) {
+    const criteria = conditions.map(c => `${c.field} ${c.operator} ${c.value}`);
     const title = criteria.length > 0 ? criteria.join(', ') : `Query ${this.tabCounter}`;
     this.tabCounter++;
 
+    // Create a loading tab first
     this.queryTabs.push({
-      title: title,
-      dataSource: filtered
+      title: title + ' (Loading...)',
+      dataSource: [],
+      colDefs: this.colDefs
     });
-    this.selectedTabIndex = this.queryTabs.length - 1;
+    const newTabIndex = this.queryTabs.length - 1;
+    this.selectedTabIndex = newTabIndex;
+
+    // Send dynamic query payload to backend. We assume a POST to /query is supported by the EntityRegistry.
+    // If we only have basic GET, this might need adapting. For now let's POST the conditions.
+    const queryPayload = { conditions };
+
+    this.http.post<any[]>(`${this.config.apiEndpoint}/query`, queryPayload).subscribe({
+      next: data => {
+        // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
+        // if the request resolves synchronously (e.g., from cache or interceptor)
+        setTimeout(() => {
+          this.queryTabs[newTabIndex].title = title;
+          this.queryTabs[newTabIndex].dataSource = data || [];
+          if (this.gridApis[newTabIndex]) {
+            this.gridApis[newTabIndex].setGridOption('rowData', data || []);
+          }
+        });
+      },
+      error: err => {
+        console.warn('Backend query failed, falling back to local filtering for demonstration.', err);
+        // Fallback: Local filtering
+        const filtered = this.allData.filter(row => {
+          for (const cond of conditions) {
+            const val = row[cond.field];
+            if (cond.operator === '=' && val != cond.value) return false;
+            if (cond.operator === '!=' && val == cond.value) return false;
+            if (cond.operator === '>' && val <= cond.value) return false;
+            if (cond.operator === '<' && val >= cond.value) return false;
+            if (cond.operator === 'LIKE' && String(val).toLowerCase().indexOf(String(cond.value).toLowerCase()) === -1)
+              return false;
+            if (cond.operator === 'IN') {
+              const list = String(cond.value)
+                .split(',')
+                .map(s => s.trim());
+              if (!list.includes(String(val))) return false;
+            }
+          }
+          return true;
+        });
+
+        // Use setTimeout to prevent NG0100 error when the error resolves synchronously
+        setTimeout(() => {
+          this.queryTabs[newTabIndex].title = title + ' (Local)';
+          this.queryTabs[newTabIndex].dataSource = filtered;
+          if (this.gridApis[newTabIndex]) {
+            this.gridApis[newTabIndex].setGridOption('rowData', filtered);
+          }
+        });
+      }
+    });
   }
 
   onContextMenu(event: CellContextMenuEvent) {
@@ -205,9 +181,9 @@ export class DataQueryComponent implements OnInit {
       width: '400px',
       data: {
         columns: this.displayedColumns,
-        numericColumns: ['amount', 'id'],
-        groupBy: ['tradeType'],
-        aggregateField: 'amount'
+        numericColumns: this.config.numericColumns || [],
+        groupBy: this.config.groupByFields || [],
+        aggregateField: this.config.numericColumns?.[0] || ''
       }
     });
 
@@ -255,20 +231,15 @@ export class DataQueryComponent implements OnInit {
     });
 
     // Create a new data source based on aggregated results
-    const aggregatedData: Trade[] = [];
+    const aggregatedData: any[] = [];
     let idCounter = 1;
     map.forEach(value => {
-      const newTrade: any = {
+      const newEntity: any = {
         id: idCounter++,
-        tradeType: '',
-        tradeDate: '',
-        amount: 0,
-        currency: '',
-        counterparty: '',
         ...value.keys
       };
-      newTrade[aggregateField] = value.sum;
-      aggregatedData.push(newTrade as Trade);
+      newEntity[aggregateField] = value.sum;
+      aggregatedData.push(newEntity);
     });
 
     const aggColDefs: ColDef[] = groupBy.map(g => ({
@@ -320,14 +291,6 @@ export class DataQueryComponent implements OnInit {
   }
 
   onReset() {
-    this.filters = {
-      tradeType: '',
-      currency: '',
-      counterparty: '',
-      startDate: this.getTodayString(),
-      endDate: this.getTodayString()
-    };
-    this.parsedStartDate = new Date();
-    this.parsedEndDate = new Date();
+    // If you need specific reset behavior for forms, implement it here or via ViewChild queryBuilder
   }
 }

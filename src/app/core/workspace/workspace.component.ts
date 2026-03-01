@@ -38,11 +38,13 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
   }
 
   openModule(moduleId: string) {
-    if (moduleId === 'data-query') {
+    const internalConfig = this.configService.getInternalModuleById(moduleId);
+    if (internalConfig) {
       this.tabService.addTab({
-        id: 'data-query',
-        title: 'Data Query',
-        componentType: DataQueryComponent
+        id: moduleId,
+        title: internalConfig.name,
+        componentType: DataQueryComponent,
+        data: { config: internalConfig }
       });
     } else if (moduleId.startsWith('ext-')) {
       const appConfig = this.configService.getExternalAppById(moduleId);

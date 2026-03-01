@@ -1,7 +1,17 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  width: 100%;
+}
+
 .query-container {
   padding: 24px 32px;
   width: 100%;
+  flex: 1;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 .header-section {
@@ -195,6 +205,9 @@ p {
   border-radius: 0 0 8px 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 
   .tab-filter-bar {
     display: flex;
@@ -265,6 +278,10 @@ p {
 
 .table-container {
   overflow-x: auto;
+  flex: 1;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
 
   .ag-theme-material {
     --ag-material-primary-color: #0b73c2;

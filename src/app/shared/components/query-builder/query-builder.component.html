@@ -1,61 +1,56 @@
-<div class="query-builder p-5 border rounded-lg shadow-sm bg-white mb-5 transition-all">
-  <h3 class="text-xl font-bold mb-4 text-gray-800">Advanced Query Builder</h3>
+<div class="query-builder-container mat-elevation-z2">
+  <div class="header">
+    <mat-icon color="primary">filter_alt</mat-icon>
+    <h3>Advanced Query Builder</h3>
+  </div>
 
   <form [formGroup]="queryForm" (ngSubmit)="onSubmit()">
-    <div formArrayName="conditions">
-      <div
-        *ngFor="let condition of conditions.controls; let i = index"
-        [formGroupName]="i"
-        class="flex items-center gap-3 mb-3"
-      >
-        <select
-          formControlName="field"
-          class="border border-gray-300 p-2 rounded-md flex-1 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-shadow"
-        >
-          <option value="" disabled>Select Field</option>
-          <option *ngFor="let field of availableFields" [value]="field.name">
-            {{ field.label }}
-          </option>
-        </select>
+    <div formArrayName="conditions" class="conditions-list">
+      <div *ngFor="let condition of conditions.controls; let i = index" [formGroupName]="i" class="condition-row">
+        <mat-form-field appearance="outline" class="field-select">
+          <mat-label>Field</mat-label>
+          <mat-select formControlName="field">
+            <mat-option *ngFor="let field of availableFields" [value]="field.name">
+              {{ field.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
 
-        <select
-          formControlName="operator"
-          class="border border-gray-300 p-2 rounded-md w-32 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-shadow"
-        >
-          <option *ngFor="let op of operators" [value]="op">{{ op }}</option>
-        </select>
+        <mat-form-field appearance="outline" class="operator-select">
+          <mat-label>Operator</mat-label>
+          <mat-select formControlName="operator">
+            <mat-option *ngFor="let op of operators" [value]="op">{{ op }}</mat-option>
+          </mat-select>
+        </mat-form-field>
 
-        <input
-          type="text"
-          formControlName="value"
-          placeholder="Condition value..."
-          class="border border-gray-300 p-2 rounded-md flex-1 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-shadow"
-        />
+        <mat-form-field appearance="outline" class="value-input">
+          <mat-label>Value</mat-label>
+          <input matInput formControlName="value" placeholder="Enter condition value..." />
+        </mat-form-field>
 
         <button
+          mat-icon-button
+          color="warn"
           type="button"
           (click)="removeCondition(i)"
-          class="px-4 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors border border-red-200"
+          matTooltip="Remove Condition"
+          class="remove-btn"
         >
-          Remove
+          <mat-icon>remove_circle_outline</mat-icon>
         </button>
       </div>
     </div>
 
-    <div class="mt-5 flex gap-3 pt-4 border-t border-gray-100">
-      <button
-        type="button"
-        (click)="addCondition()"
-        class="px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-md hover:bg-gray-200 transition-colors"
-      >
-        + Add Condition
+    <div class="actions-row">
+      <button mat-stroked-button type="button" color="primary" (click)="addCondition()">
+        <mat-icon>add</mat-icon>
+        Add Condition
       </button>
 
-      <button
-        type="submit"
-        [disabled]="!queryForm.valid"
-        class="px-5 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ml-auto"
-      >
+      <span class="spacer"></span>
+
+      <button mat-flat-button color="primary" type="submit" [disabled]="!queryForm.valid">
+        <mat-icon>search</mat-icon>
         Apply Query
       </button>
     </div>

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { BuiltinModules, DataQueryConfig } from '../config/data-query.config';
 
 export interface ExternalAppConfig {
   id: string;
@@ -19,6 +20,14 @@ export class ConfigService {
   private externalApps: ExternalAppConfig[] = [];
 
   constructor(private http: HttpClient) {}
+
+  getInternalModules(): DataQueryConfig[] {
+    return Object.values(BuiltinModules);
+  }
+
+  getInternalModuleById(id: string): DataQueryConfig | undefined {
+    return BuiltinModules[id];
+  }
 
   loadExternalApps(): Observable<ExternalAppConfig[]> {
     return this.http.get<ExternalAppConfig[]>('/external-apps.json').pipe(tap(apps => (this.externalApps = apps)));

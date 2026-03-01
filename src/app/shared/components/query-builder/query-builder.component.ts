@@ -2,6 +2,12 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+
 export interface QueryCondition {
   field: string;
   operator: string;
@@ -11,8 +17,17 @@ export interface QueryCondition {
 @Component({
   selector: 'app-query-builder',
   templateUrl: './query-builder.component.html',
+  styleUrls: ['./query-builder.component.scss'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule]
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatInputModule,
+    MatIconModule,
+    MatButtonModule
+  ]
 })
 export class QueryBuilderComponent implements OnInit {
   @Input() availableFields: { name: string; label: string; type: string }[] = [];

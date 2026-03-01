@@ -22,15 +22,7 @@ export class HomeComponent implements OnInit {
   modules: any[] = [];
 
   ngOnInit() {
-    this.modules = [
-      {
-        id: 'data-query',
-        name: 'Data Query Module',
-        description: 'Query and view data from backend API.',
-        bgStyle: 'linear-gradient(135deg, #1b539c 0%, #089fd1 100%)',
-        logo: 'DQ'
-      }
-    ];
+    this.modules = this.configService.getInternalModules();
 
     const cachedApps = this.configService.getExternalApps();
     if (cachedApps && cachedApps.length > 0) {

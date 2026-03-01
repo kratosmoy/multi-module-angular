@@ -1,0 +1,68 @@
+.query-builder-container {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+  transition: box-shadow 0.3s ease;
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 12px;
+
+    h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #333;
+    }
+  }
+
+  .conditions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .condition-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+
+    mat-form-field {
+      margin-bottom: -1.25em; // Reduce space taken by mat-form-field bottom padding
+    }
+
+    .field-select {
+      flex: 1;
+      max-width: 250px;
+    }
+
+    .operator-select {
+      width: 140px;
+    }
+
+    .value-input {
+      flex: 2;
+    }
+
+    .remove-btn {
+      margin-top: 8px;
+    }
+  }
+
+  .actions-row {
+    display: flex;
+    align-items: center;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f0;
+
+    .spacer {
+      flex: 1;
+    }
+  }
+}
